@@ -3,6 +3,8 @@ package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.ada
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name="shipment_dealer")
 @Getter
@@ -14,6 +16,18 @@ public class ShipmentDealer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "dealer_id")
     private Long dealerId;
-    private Long shipmentId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ShipmentDealer that)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(dealerId, that.dealerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dealerId);
+    }
 }

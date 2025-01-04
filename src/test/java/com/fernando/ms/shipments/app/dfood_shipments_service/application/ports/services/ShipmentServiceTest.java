@@ -2,9 +2,11 @@ package com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ShipmentPersistencePort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.ShipmentService;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.utils.TestUtilShipment;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +29,19 @@ public class ShipmentServiceTest {
     @Mock
     private ShipmentPersistencePort shipmentPersistencePort;
 
+    @Mock
+    private  IStatusShipmentStrategy statusShipmentStrategy;
+
+    private List<IStatusShipmentStrategy> statusShipmentStrategyList;
+
     @InjectMocks
     private ShipmentService shipmentService;
+
+    @BeforeEach
+    void setUp() {
+        statusShipmentStrategyList = List.of(statusShipmentStrategy);
+        shipmentService = new ShipmentService(shipmentPersistencePort, statusShipmentStrategyList);
+    }
 
     @Test
     @DisplayName("When Shipment Information Exists  Expect A List Information Shipments")
@@ -65,5 +78,19 @@ public class ShipmentServiceTest {
         when(shipmentPersistencePort.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(ShipmentNotFoundException.class,()->shipmentService.findById(1L));
         Mockito.verify(shipmentPersistencePort,times(1)).findById(anyLong());
+    }
+
+    @Test
+    @DisplayName("When Shipment Information Is Correct Expect Shipment Information Saved Correctly")
+    void When_ShipmentInformationIsCorrect_Expect_ShipmentInformationSavedCorrectly(){
+        Shipment shipment= TestUtilShipment.buildShipmentOrderDealerMock();
+        when(statusShipmentStrategy.isApplicable("PENDING")).thenReturn(true);
+        when(statusShipmentStrategy.doOperation(any(Shipment.class))).thenReturn("PENDING");
+        when(shipmentPersistencePort.save(shipment)).thenReturn(shipment);
+        Shipment shipmentResponse=shipmentService.save(shipment);
+        assertNotNull(shipmentResponse);
+        Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
+        Mockito.verify(statusShipmentStrategy,times(1)).doOperation(any(Shipment.class));
+        Mockito.verify(shipmentPersistencePort,times(1)).save(shipment);
     }
 }

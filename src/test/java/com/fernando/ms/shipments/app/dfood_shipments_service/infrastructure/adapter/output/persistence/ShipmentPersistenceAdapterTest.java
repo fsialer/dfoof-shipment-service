@@ -17,8 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -53,5 +52,22 @@ public class ShipmentPersistenceAdapterTest {
         assertTrue(orderResponse.isPresent());
         Mockito.verify(shipmentJpaRepository,times(1)).findById(anyLong());
         Mockito.verify(shipmentPersistenceMapper,times(1)).toShipment(any(ShipmentEntity.class));
+    }
+
+    @Test
+    @DisplayName("When Order Information Is Correct Expect Order Information To Be Saved")
+    void When_OrderInformationIsCorrect_Expect_OrderInformationToBeSaved(){
+        ShipmentEntity shipmentEntity= TestUtilShipment.buildShipmentEntityMock();
+        Shipment shipment=TestUtilShipment.buildShipmentOrderDealerMock();
+        when(shipmentJpaRepository.save(any(ShipmentEntity.class))).thenReturn(shipmentEntity);
+        when(shipmentPersistenceMapper.toShipment(any(ShipmentEntity.class))).thenReturn(shipment);
+        when(shipmentPersistenceMapper.toShipmentEntity(any(Shipment.class))).thenReturn(shipmentEntity);
+
+        Shipment shipmentResponse=shipmentPersistenceAdapter.save(shipment);
+        assertNotNull(shipmentResponse);
+        assertEquals(shipment, shipmentResponse);
+        Mockito.verify(shipmentJpaRepository,times(1)).save(any(ShipmentEntity.class));
+        Mockito.verify(shipmentPersistenceMapper,times(1)).toShipment(any(ShipmentEntity.class));
+        Mockito.verify(shipmentPersistenceMapper,times(1)).toShipmentEntity(any(Shipment.class));
     }
 }

@@ -2,14 +2,14 @@ package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.ada
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.mapper.ShipmentRestMapper;
+import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.request.CreateShipmentRequest;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ShipmentResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -27,5 +27,11 @@ public class ShipmentRestAdapter {
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponse> findById(@PathVariable Long id){
         return ResponseEntity.ok().body(shipmentRestMapper.toShipmentResponse(shipmentInputPort.findById(id)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ShipmentResponse> save(@Valid @RequestBody CreateShipmentRequest rq){
+        ShipmentResponse response=shipmentRestMapper.toShipmentResponse(shipmentInputPort.save(shipmentRestMapper.toShipment(rq)));
+        return ResponseEntity.created(URI.create("/shipments/".concat(response.getId().toString()))).body(response);
     }
 }

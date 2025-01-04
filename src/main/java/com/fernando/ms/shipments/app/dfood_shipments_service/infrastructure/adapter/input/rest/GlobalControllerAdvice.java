@@ -1,9 +1,12 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest;
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
+import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,8 +16,7 @@ import java.util.Collections;
 
 import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.enums.ErrorType.FUNCTIONAL;
 import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.enums.ErrorType.SYSTEM;
-import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.utils.ErrorCatalog.INTERNAL_SERVER_ERROR;
-import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.utils.ErrorCatalog.SHIPMENT_NOT_FOUND;
+import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.utils.ErrorCatalog.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,6 +33,35 @@ public class GlobalControllerAdvice {
                 .timestamp(LocalDate.now().toString())
                 .build();
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        BindingResult bindingResult = e.getBindingResult();
+
+        return ErrorResponse.builder()
+                .code(SHIPMENT_BAD_PARAMETERS.getCode())
+                .type(FUNCTIONAL)
+                .message(SHIPMENT_BAD_PARAMETERS.getMessage())
+                .details(bindingResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage())
+                        .toList())
+                .timestamp(LocalDate.now().toString())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(StatusShipmentStrategyException.class)
+    public ErrorResponse handleStatusShipmentStrategyException(StatusShipmentStrategyException e) {
+
+        return ErrorResponse.builder()
+                .code(STATUS_SHIPMENT_STRATEGY_ERROR.getCode())
+                .type(FUNCTIONAL)
+                .message(STATUS_SHIPMENT_STRATEGY_ERROR.getMessage())
+                .details(Collections.singletonList(e.getMessage()))
+                .timestamp(LocalDate.now().toString())
+                .build();
+    }
+
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)

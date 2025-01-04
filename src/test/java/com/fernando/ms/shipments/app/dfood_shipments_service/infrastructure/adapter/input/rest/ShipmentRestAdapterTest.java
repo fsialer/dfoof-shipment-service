@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.mapper.ShipmentRestMapper;
+import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.request.CreateShipmentRequest;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ShipmentResponse;
 import com.fernando.ms.shipments.app.dfood_shipments_service.utils.TestUtilShipment;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,7 +73,7 @@ public class ShipmentRestAdapterTest {
     }
 
     @Test
-    @DisplayName("When_ Shipment Identifier Is Valid Expect Shipment Information Successfully")
+    @DisplayName("When Shipment Identifier Is Valid Expect Shipment Information Successfully")
     void When_ShipmentIdentifierIsValid_Expect_ShipmentInformationSuccessfully() throws Exception {
 
         when(shipmentInputPort.findById(anyLong()))
@@ -87,5 +89,28 @@ public class ShipmentRestAdapterTest {
 
         Mockito.verify(shipmentInputPort,times(1)).findById(anyLong());
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
+    }
+
+    @Test
+    @DisplayName("When Shipment Information Is Correct Expect Shipment Information Saved Successfully")
+    void When_ShipmentInformationIsCorrect_Expect_ShipmentInformationSavedSuccessfully() throws Exception {
+
+        when(shipmentInputPort.save(any(Shipment.class)))
+                .thenReturn(TestUtilShipment.buildShipmentMock());
+
+        when(shipmentRestMapper.toShipment(any(CreateShipmentRequest.class)))
+                .thenReturn(TestUtilShipment.buildShipmentOrderDealerMock());
+        when(shipmentRestMapper.toShipmentResponse(any(Shipment.class)))
+                .thenReturn(TestUtilShipment.buildShipmentResponseMock());
+
+        mockMvc.perform(post("/shipments").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(TestUtilShipment.buildCreateShipmentRequestMok())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andDo(print());
+
+        Mockito.verify(shipmentInputPort,times(1)).save(any(Shipment.class));
+        Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
+        Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
     }
 }

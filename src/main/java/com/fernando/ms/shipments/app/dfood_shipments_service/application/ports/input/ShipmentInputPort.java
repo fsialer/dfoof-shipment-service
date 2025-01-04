@@ -7,5 +7,6 @@ import java.util.List;
 public interface ShipmentInputPort {
     List<Shipment> findAll();
     Shipment findById(Long id);
+    Shipment save(Shipment shipment);
 }
    

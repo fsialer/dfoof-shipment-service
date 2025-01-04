@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface ShipmentPersistencePort {
     List<Shipment> findAll();
     Optional<Shipment> findById(Long id);
+    Shipment save(Shipment shipment);
 }
