@@ -6,6 +6,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adap
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,5 +22,10 @@ public class ShipmentRestAdapter {
     @GetMapping
     public ResponseEntity<List<ShipmentResponse>> findAll(){
         return ResponseEntity.ok().body(shipmentRestMapper.toShipmentsResponse(shipmentInputPort.findAll()));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ShipmentResponse> findById(@PathVariable Long id){
+        return ResponseEntity.ok().body(shipmentRestMapper.toShipmentResponse(shipmentInputPort.findById(id)));
     }
 }

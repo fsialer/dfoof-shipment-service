@@ -9,4 +9,5 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ShipmentPersistenceMapper {
     List<Shipment> toShipments(List<ShipmentEntity> shipments);
+    Shipment toShipment(ShipmentEntity shipment);
 }

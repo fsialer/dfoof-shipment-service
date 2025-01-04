@@ -30,7 +30,7 @@ public class TestUtilShipment {
                 .build();
     }
 
-    public static ShipmentResponse buildShipmentsResponseMock(){
+    public static ShipmentResponse buildShipmentResponseMock(){
         return ShipmentResponse.builder()
                 .id(1L)
                 .dateShipment(LocalDateTime.now())

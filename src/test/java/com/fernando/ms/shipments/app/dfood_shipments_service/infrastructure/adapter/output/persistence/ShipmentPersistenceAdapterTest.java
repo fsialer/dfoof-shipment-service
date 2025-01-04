@@ -15,9 +15,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,5 +42,16 @@ public class ShipmentPersistenceAdapterTest {
         assertEquals(1,shipments.size());
         Mockito.verify(shipmentJpaRepository, Mockito.times(1)).findAll();
         Mockito.verify(shipmentPersistenceMapper, Mockito.times(1)).toShipments(anyList());
+    }
+
+    @Test
+    @DisplayName("When Shipment Information By Identifier Is Correct Expect Shipment Information Correct")
+    void When_ShipmentInformationByIdentifierIsCorrect_Expect_ShipmentInformationCorrect(){
+        when(shipmentJpaRepository.findById(anyLong())).thenReturn(Optional.of(TestUtilShipment.buildShipmentEntityMock()));
+        when(shipmentPersistenceMapper.toShipment(any(ShipmentEntity.class))).thenReturn(TestUtilShipment.buildShipmentMock());
+        Optional<Shipment> orderResponse=shipmentPersistenceAdapter.findById(1L);
+        assertTrue(orderResponse.isPresent());
+        Mockito.verify(shipmentJpaRepository,times(1)).findById(anyLong());
+        Mockito.verify(shipmentPersistenceMapper,times(1)).toShipment(any(ShipmentEntity.class));
     }
 }

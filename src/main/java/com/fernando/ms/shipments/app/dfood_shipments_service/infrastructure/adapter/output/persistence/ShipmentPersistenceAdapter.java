@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -17,5 +18,10 @@ public class ShipmentPersistenceAdapter implements ShipmentPersistencePort {
     @Override
     public List<Shipment> findAll() {
         return shipmentPersistenceMapper.toShipments(shipmentJpaRepository.findAll());
+    }
+
+    @Override
+    public Optional<Shipment> findById(Long id) {
+        return shipmentJpaRepository.findById(id).map(shipmentPersistenceMapper::toShipment);
     }
 }

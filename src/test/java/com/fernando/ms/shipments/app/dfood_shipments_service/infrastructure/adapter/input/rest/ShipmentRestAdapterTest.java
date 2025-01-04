@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,7 +52,7 @@ public class ShipmentRestAdapterTest {
     void When_ShipmentsAreAvailability_Expect_ShipmentsInformationSuccessfully() throws Exception {
 
         Shipment order = TestUtilShipment.buildShipmentMock();
-        List<ShipmentResponse> shipmentsResponse= Collections.singletonList(TestUtilShipment.buildShipmentsResponseMock());
+        List<ShipmentResponse> shipmentsResponse= Collections.singletonList(TestUtilShipment.buildShipmentResponseMock());
 
         when(shipmentInputPort.findAll())
                 .thenReturn(Collections.singletonList(order));
@@ -68,5 +68,24 @@ public class ShipmentRestAdapterTest {
 
         Mockito.verify(shipmentInputPort,times(1)).findAll();
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentsResponse(anyList());
+    }
+
+    @Test
+    @DisplayName("When_ Shipment Identifier Is Valid Expect Shipment Information Successfully")
+    void When_ShipmentIdentifierIsValid_Expect_ShipmentInformationSuccessfully() throws Exception {
+
+        when(shipmentInputPort.findById(anyLong()))
+                .thenReturn(TestUtilShipment.buildShipmentMock());
+
+        when(shipmentRestMapper.toShipmentResponse(any(Shipment.class)))
+                .thenReturn(TestUtilShipment.buildShipmentResponseMock());
+
+        mockMvc.perform(get("/shipments/{id}",1L).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andDo(print());
+
+        Mockito.verify(shipmentInputPort,times(1)).findById(anyLong());
+        Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
     }
 }
