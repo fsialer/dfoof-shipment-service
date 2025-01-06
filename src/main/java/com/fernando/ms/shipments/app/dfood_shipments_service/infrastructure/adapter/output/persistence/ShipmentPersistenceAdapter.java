@@ -9,6 +9,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adap
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +32,22 @@ public class ShipmentPersistenceAdapter implements ShipmentPersistencePort {
     public Shipment save(Shipment shipment) {
         ShipmentEntity shipmentEntity=shipmentPersistenceMapper.toShipmentEntity(shipment);
         shipmentEntity.addShipmentOrder(shipment.getOrders().stream().map(Order::getId).toList());
-        shipmentEntity.setShipmentDealer(shipment.getDealer().getId());
+        shipmentEntity.setShipmentDealerId(shipment.getDealer().getId());
         shipmentEntity.addTracking();
+        return shipmentPersistenceMapper.toShipment(shipmentJpaRepository.save(shipmentEntity));
+    }
+
+    @Override
+    public Shipment changeStatusShipment(Shipment shipment) {
+        ShipmentEntity shipmentEntity=shipmentPersistenceMapper.toShipmentEntity(shipment);
+        ShipmentEntity shipmentEntity2=shipmentJpaRepository.findById(shipment.getId()).get();
+        shipmentEntity.setShipmentOrderList(
+                new ArrayList<>(shipmentEntity2.getShipmentOrderList())
+        );
+        shipmentEntity.setTrackings(shipmentEntity2.getTrackings());
+        shipmentEntity.addTracking();
+        shipmentEntity.setShipmentDealer(shipmentEntity2.getShipmentDealer());
+        shipmentEntity.setCreatedAt(shipmentEntity2.getCreatedAt());
         return shipmentPersistenceMapper.toShipment(shipmentJpaRepository.save(shipmentEntity));
     }
 

@@ -70,4 +70,21 @@ public class ShipmentPersistenceAdapterTest {
         Mockito.verify(shipmentPersistenceMapper,times(1)).toShipment(any(ShipmentEntity.class));
         Mockito.verify(shipmentPersistenceMapper,times(1)).toShipmentEntity(any(Shipment.class));
     }
+
+    @Test
+    @DisplayName("When Change Status Of Shipment Expect Status Shipment Updated Correctly")
+    void When_ChangeStatusOfShipment_Expect_StatusShipmentUpdatedCorrectly(){
+        ShipmentEntity shipmentEntity= TestUtilShipment.buildShipmentDealerTrackingOrderEntityMock();
+        Shipment shipment=TestUtilShipment.buildShipmentOrderDealerMock();
+        when(shipmentJpaRepository.save(any(ShipmentEntity.class))).thenReturn(shipmentEntity);
+        when(shipmentPersistenceMapper.toShipment(any(ShipmentEntity.class))).thenReturn(shipment);
+        when(shipmentPersistenceMapper.toShipmentEntity(any(Shipment.class))).thenReturn(shipmentEntity);
+        when(shipmentJpaRepository.findById(anyLong())).thenReturn(Optional.of(shipmentEntity));
+        Shipment shipmentResponse=shipmentPersistenceAdapter.changeStatusShipment(shipment);
+        assertNotNull(shipmentResponse);
+        assertEquals(shipment, shipmentResponse);
+        Mockito.verify(shipmentJpaRepository,times(1)).save(any(ShipmentEntity.class));
+        Mockito.verify(shipmentPersistenceMapper,times(1)).toShipment(any(ShipmentEntity.class));
+        Mockito.verify(shipmentPersistenceMapper,times(1)).toShipmentEntity(any(Shipment.class));
+    }
 }

@@ -23,8 +23,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -112,5 +111,28 @@ public class ShipmentRestAdapterTest {
         Mockito.verify(shipmentInputPort,times(1)).save(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
+    }
+
+    @Test
+    @DisplayName("When Change Status Shipment Is Correct Expect Status Shipment Updated Successfully")
+    void When_ChangeStatusShipmentIsCorrect_Expect_StatusShipmentUpdatedSuccessfully() throws Exception {
+
+        when(shipmentInputPort.changeStatusShipment(anyLong(),anyString()))
+                .thenReturn(TestUtilShipment.buildShipmentMock());
+
+//        when(shipmentRestMapper.toShipment(any(CreateShipmentRequest.class)))
+//                .thenReturn(TestUtilShipment.buildShipmentOrderDealerMock());
+        when(shipmentRestMapper.toShipmentResponse(any(Shipment.class)))
+                .thenReturn(TestUtilShipment.buildShipmentResponseMock());
+
+        mockMvc.perform(put("/shipments/{id}/change-status/{status}",1L,"IN_PROGRESS").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(TestUtilShipment.buildCreateShipmentRequestMok())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andDo(print());
+
+        Mockito.verify(shipmentInputPort,times(1)).changeStatusShipment(anyLong(),anyString());
+        Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
+        //Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
     }
 }

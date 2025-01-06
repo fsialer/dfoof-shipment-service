@@ -9,6 +9,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipm
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,5 +38,19 @@ public class ShipmentService implements ShipmentInputPort {
                 .orElseThrow(()->new StatusShipmentStrategyException("Status shipment not found: PENDING"));
         shipment.setStatusShipment(shipmentStrategy.doOperation(shipment));
         return shipmentPersistencePort.save(shipment);
+    }
+
+    @Override
+    public Shipment changeStatusShipment(Long id, String status) {
+        IStatusShipmentStrategy shipmentStrategy=orderStrategyList.stream()
+                .filter(strategy->strategy.isApplicable(status))
+                .findFirst()
+                .orElseThrow(()->new StatusShipmentStrategyException("Status shipment not found: "+status));
+        return shipmentPersistencePort.findById(id)
+                .map(shipment -> {
+                    shipment.setStatusShipment(shipmentStrategy.doOperation(shipment));
+                    return shipmentPersistencePort.changeStatusShipment(shipment);
+                })
+                .orElseThrow(ShipmentNotFoundException::new);
     }
 }

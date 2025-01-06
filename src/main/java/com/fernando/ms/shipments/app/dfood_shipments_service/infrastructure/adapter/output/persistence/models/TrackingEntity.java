@@ -2,6 +2,7 @@ package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.ada
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +20,9 @@ public class TrackingEntity {
     private String status;
     private String details;
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

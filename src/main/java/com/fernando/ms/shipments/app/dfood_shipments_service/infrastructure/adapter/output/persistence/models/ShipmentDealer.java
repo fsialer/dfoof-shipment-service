@@ -18,6 +18,9 @@ public class ShipmentDealer {
     private Long id;
     @Column(name = "dealer_id")
     private Long dealerId;
+    @OneToOne
+    @JoinColumn(name = "shipment_id", nullable = false)
+    private ShipmentEntity shipment; // Relación inversa
 
     @Override
     public boolean equals(Object o) {

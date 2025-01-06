@@ -1,12 +1,10 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.output.persistence.models;
 
-import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Dealer;
-import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Order;
-import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Tracking;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +25,24 @@ public class ShipmentEntity {
     private String reference;
     private String geoLocation;
     private String statusShipment;
+    //@CreatedDate
     private LocalDateTime createdAt;
+    //@LastModifiedDate
     private LocalDateTime updatedAt;
-    @JoinColumn(name = "shipment_id")
+
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "shipment_id",referencedColumnName = "id")
     private List<ShipmentOrder> shipmentOrderList;
 
-    @JoinColumn(name = "shipment_id")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TrackingEntity> trackingList=new ArrayList<>();
 
-    @JoinColumn(name = "shipment_id")
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "shipment_id",referencedColumnName = "id")
+    private List<TrackingEntity> trackings=new ArrayList<>();
+
+
+    @OneToOne(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@JoinColumn(name = "shipment_id",referencedColumnName = "id")
     private ShipmentDealer shipmentDealer;
 
     public void addShipmentOrder(List<Long> orderIds){
@@ -49,31 +53,36 @@ public class ShipmentEntity {
                 .builder()
                 .orderId(orderId)
                 .build()));
-//        this.shipmentOrderList.add(ShipmentOrder
-//                .builder()
-//                .orderId(shipmentOrder.getId())
-//                .build());
     }
 
     public void addTracking(){
-        if (this.trackingList == null) {
-            this.trackingList = new ArrayList<>();
+        if (this.trackings == null) {
+            this.trackings = new ArrayList<>();
         }
-        this.trackingList.add(TrackingEntity
+        this.trackings.add(TrackingEntity
                 .builder()
                 .status(this.getStatusShipment())
                 .createdAt(LocalDateTime.now())
                 .build());
     }
 
-    public void setShipmentDealer(Long dealerId){
+    public void setShipmentDealerId(Long dealerId){
         this.shipmentDealer = ShipmentDealer
                 .builder()
                 .dealerId(dealerId)
+                .shipment(this)
                 .build();
     }
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
-
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
 }

@@ -34,4 +34,10 @@ public class ShipmentRestAdapter {
         ShipmentResponse response=shipmentRestMapper.toShipmentResponse(shipmentInputPort.save(shipmentRestMapper.toShipment(rq)));
         return ResponseEntity.created(URI.create("/shipments/".concat(response.getId().toString()))).body(response);
     }
+
+    @PutMapping("{id}/change-status/{status}")
+    public ResponseEntity<ShipmentResponse> changeStatus(@PathVariable(name = "id") Long id,@PathVariable(name = "status") String status){
+        ShipmentResponse orderResponse=shipmentRestMapper.toShipmentResponse(shipmentInputPort.changeStatusShipment(id,status));
+        return ResponseEntity.ok().body(orderResponse);
+    }
 }

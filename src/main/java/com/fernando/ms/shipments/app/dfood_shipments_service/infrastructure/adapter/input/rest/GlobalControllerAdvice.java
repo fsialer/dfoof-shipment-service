@@ -1,6 +1,7 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest;
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
+import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentRuleException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +58,19 @@ public class GlobalControllerAdvice {
                 .code(STATUS_SHIPMENT_STRATEGY_ERROR.getCode())
                 .type(FUNCTIONAL)
                 .message(STATUS_SHIPMENT_STRATEGY_ERROR.getMessage())
+                .details(Collections.singletonList(e.getMessage()))
+                .timestamp(LocalDate.now().toString())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(StatusShipmentRuleException.class)
+    public ErrorResponse handleStatusShipmentRuleException(StatusShipmentRuleException e) {
+
+        return ErrorResponse.builder()
+                .code(STATUS_SHIPMENT_RULES_ERROR.getCode())
+                .type(FUNCTIONAL)
+                .message(STATUS_SHIPMENT_RULES_ERROR.getMessage())
                 .details(Collections.singletonList(e.getMessage()))
                 .timestamp(LocalDate.now().toString())
                 .build();

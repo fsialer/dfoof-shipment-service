@@ -8,6 +8,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adap
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public interface ShipmentRestMapper {
 
     @Mapping(target = "orders", expression = "java(mapOrders(rq))")
     @Mapping(target = "dealer", expression = "java(mapDealer(rq))")
+    @Mapping(target = "dateShipment", expression = "java(mapDateShipment(rq))")
     Shipment toShipment(CreateShipmentRequest rq);
 
 
@@ -33,8 +35,8 @@ public interface ShipmentRestMapper {
         return Dealer.builder().id(rq.getDealerId()).build();
     }
 
-//    default String mapStatusShipment(){
-//        return "PENDING";
-//    }
+    default LocalDateTime mapDateShipment(CreateShipmentRequest rq){
+        return rq.getDateShipment()==null?LocalDateTime.now():rq.getDateShipment();
+    }
 
 }

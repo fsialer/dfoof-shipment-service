@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,6 +16,7 @@ import java.util.List;
 public class CreateShipmentRequest {
     @NotBlank(message = "Field address cannot be null or blank.")
     private String address;
+    private LocalDateTime dateShipment;
     private String reference;
     private String geoLocation;
     @NotNull(message = "Field orders cannot be null.")

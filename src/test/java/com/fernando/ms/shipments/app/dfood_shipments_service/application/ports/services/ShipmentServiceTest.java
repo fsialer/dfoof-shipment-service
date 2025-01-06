@@ -4,6 +4,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.o
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.ShipmentService;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
+import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.utils.TestUtilShipment;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -92,5 +94,39 @@ public class ShipmentServiceTest {
         Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
         Mockito.verify(statusShipmentStrategy,times(1)).doOperation(any(Shipment.class));
         Mockito.verify(shipmentPersistencePort,times(1)).save(shipment);
+    }
+
+    @Test
+    @DisplayName("Expect StatusShipmentStrategyException When Shipment Information Is Not Correctly")
+    void Expect_StatusShipmentStrategyException_When_ShipmentInformationIsNotCorrectly(){
+        Shipment shipment= TestUtilShipment.buildShipmentOrderDealerMock();
+        when(statusShipmentStrategy.isApplicable("PENDING")).thenReturn(false);
+        //when(statusShipmentStrategy.doOperation(any(Shipment.class))).thenReturn("PENDING");
+        //when(shipmentPersistencePort.save(shipment)).thenReturn(shipment);
+        StatusShipmentStrategyException exception =assertThrows(StatusShipmentStrategyException.class,()->{
+            shipmentService.save(shipment);
+        });
+        //Shipment shipmentResponse=;
+        //assertNotNull(shipmentResponse);
+        assertEquals("Status shipment not found: PENDING", exception.getMessage());
+        Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
+        Mockito.verify(statusShipmentStrategy,times(0)).doOperation(any(Shipment.class));
+        Mockito.verify(shipmentPersistencePort,times(0)).save(shipment);
+    }
+
+    @Test
+    @DisplayName("When change Status Of Shipment Correctly Expect Change Status Of Shipment Information Updated Correctly")
+    void When_ChangeStatusOfShipmentCorrectly_Expect_ChangeStatusOfShipmentInformationUpdatedCorrectly(){
+        Shipment shipment= TestUtilShipment.buildShipmentOrderDealerMock();
+        when(statusShipmentStrategy.isApplicable("IN_PROGRESS")).thenReturn(true);
+        when(statusShipmentStrategy.doOperation(any(Shipment.class))).thenReturn("IN_PROGRESS");
+        when(shipmentPersistencePort.findById(anyLong())).thenReturn(Optional.of(shipment));
+        when(shipmentPersistencePort.changeStatusShipment(shipment)).thenReturn(shipment);
+        Shipment shipmentResponse=shipmentService.changeStatusShipment(1L,"IN_PROGRESS");
+        assertNotNull(shipmentResponse);
+        Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
+        Mockito.verify(statusShipmentStrategy,times(1)).doOperation(any(Shipment.class));
+        Mockito.verify(shipmentPersistencePort,times(1)).findById(anyLong());
+        Mockito.verify(shipmentPersistencePort,times(1)).changeStatusShipment(shipment);
     }
 }

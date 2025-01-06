@@ -8,5 +8,6 @@ public interface ShipmentInputPort {
     List<Shipment> findAll();
     Shipment findById(Long id);
     Shipment save(Shipment shipment);
+    Shipment changeStatusShipment(Long id, String status);
 }
    
