@@ -4,8 +4,10 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.S
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentRuleException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ErrorResponse;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -75,7 +77,23 @@ public class GlobalControllerAdvice {
                 .timestamp(LocalDate.now().toString())
                 .build();
     }
-
+    
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleFeignException(FeignException e) {
+        HttpStatus status=HttpStatus.BAD_GATEWAY;
+        if(e.status()!=-1){
+            status= HttpStatus.valueOf(e.status());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(WEB_CLIENT_ERROR.getCode())
+                .type(FUNCTIONAL)
+                .message(WEB_CLIENT_ERROR.getMessage())
+                .details(Collections.singletonList(e.getMessage()))
+                .timestamp(LocalDate.now().toString())
+                .build();
+        return ResponseEntity.status(status.value())
+                .body(errorResponse);
+    }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)

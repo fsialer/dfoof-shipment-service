@@ -60,7 +60,7 @@ public class TestUtilShipment {
                 .statusShipment("IN_PROGRESS")
                 .shipmentOrderList(new ArrayList<>(List.of(ShipmentOrder.builder().id(1L).orderId(1L).build())))
                 .shipmentDealer(ShipmentDealer.builder().id(1L).dealerId(1L).build())
-                .trackingList(new ArrayList<>(List.of(
+                .trackings(new ArrayList<>(List.of(
                         TrackingEntity.builder().id(1L).status("PENDING").build(),
                         TrackingEntity.builder().id(1L).status("IN_PROGRESS").build()
                 )))

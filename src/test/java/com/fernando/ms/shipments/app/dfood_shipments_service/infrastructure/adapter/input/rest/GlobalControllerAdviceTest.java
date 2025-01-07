@@ -1,6 +1,7 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
@@ -9,24 +10,28 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adap
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.request.CreateShipmentRequest;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.response.ErrorResponse;
 import com.fernando.ms.shipments.app.dfood_shipments_service.utils.TestUtilShipment;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
 
 import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.enums.ErrorType.FUNCTIONAL;
 import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.enums.ErrorType.SYSTEM;
 import static com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.utils.ErrorCatalog.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {ShipmentRestAdapter.class})
@@ -40,6 +45,9 @@ public class GlobalControllerAdviceTest {
 
     @MockBean
     private ShipmentRestMapper shipmentRestMapper;
+
+    @MockBean
+    private ExternalDealersInputPort externalDealersInputPort;
 
 
     private ObjectMapper objectMapper;
@@ -141,4 +149,45 @@ public class GlobalControllerAdviceTest {
                     );
                 });
     }
+
+    @Test
+    @DisplayName("Expect FeignException When Shipment Of Order Are Invalid")
+    void Expect_FeignException_When_ProductsOfOrderAreInvalid() throws Exception {
+        CreateShipmentRequest createOrderRequest= TestUtilShipment.buildCreateShipmentRequestMok();
+        Shipment shipment = TestUtilShipment.buildShipmentMock();
+
+        when(shipmentRestMapper.toShipment(any(CreateShipmentRequest.class)))
+                .thenReturn(shipment);
+
+        FeignException feignException = FeignException.errorStatus(
+                "GET /dealers/verify-exists-by-id?"+1L,
+                feign.Response.builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .reason("Product not found")
+                        .request(feign.Request.create(Request.HttpMethod.GET, "/dealers/verify-exists-by-id", Collections.emptyMap(), null, null, null))
+                        .build()
+        );
+
+        doThrow(feignException).when(shipmentInputPort).save(any(Shipment.class));
+        mockMvc.perform(post("/shipments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createOrderRequest)))
+                .andExpect(result -> {
+                    // Parsear la respuesta para verificar los datos
+                    ErrorResponse errorResponse = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            ErrorResponse.class
+                    );
+
+                    // Assert: Validar que la respuesta sea como se espera
+                    assertAll(
+                            () -> assertEquals(WEB_CLIENT_ERROR.getCode(), errorResponse.getCode()),
+                            () -> assertEquals(FUNCTIONAL, errorResponse.getType()),
+                            () -> assertEquals(WEB_CLIENT_ERROR.getMessage(), errorResponse.getMessage()),
+                            () -> assertNotNull(errorResponse.getDetails()),
+                            () -> assertNotNull(errorResponse.getTimestamp())
+                    );
+                });
+    }
+
 }

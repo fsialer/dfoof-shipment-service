@@ -1,6 +1,8 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.application.services;
 
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalDealersOutputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ShipmentPersistencePort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
@@ -14,10 +16,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ShipmentService implements ShipmentInputPort {
+public class ShipmentService implements ShipmentInputPort, ExternalDealersInputPort {
 
     private final ShipmentPersistencePort shipmentPersistencePort;
     private final List<IStatusShipmentStrategy>  orderStrategyList;
+    private final ExternalDealersOutputPort externalDealersOutputPort;
 
     @Override
     public List<Shipment> findAll() {
@@ -52,5 +55,10 @@ public class ShipmentService implements ShipmentInputPort {
                     return shipmentPersistencePort.changeStatusShipment(shipment);
                 })
                 .orElseThrow(ShipmentNotFoundException::new);
+    }
+
+    @Override
+    public void verifyExistsDealersById(Long id) {
+        externalDealersOutputPort.verifyExistsDealersById(id);
     }
 }

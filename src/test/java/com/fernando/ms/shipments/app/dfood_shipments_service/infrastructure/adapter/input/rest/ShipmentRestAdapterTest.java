@@ -1,6 +1,7 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.mapper.ShipmentRestMapper;
@@ -21,8 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,6 +39,9 @@ public class ShipmentRestAdapterTest {
 
     @MockBean
     private ShipmentRestMapper shipmentRestMapper;
+
+    @MockBean
+    private ExternalDealersInputPort externalDealersInputPort;
 
 
     private ObjectMapper objectMapper;
@@ -102,6 +105,8 @@ public class ShipmentRestAdapterTest {
         when(shipmentRestMapper.toShipmentResponse(any(Shipment.class)))
                 .thenReturn(TestUtilShipment.buildShipmentResponseMock());
 
+        doNothing().when(externalDealersInputPort).verifyExistsDealersById(anyLong());
+
         mockMvc.perform(post("/shipments").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(TestUtilShipment.buildCreateShipmentRequestMok())))
                 .andExpect(status().isCreated())
@@ -111,6 +116,7 @@ public class ShipmentRestAdapterTest {
         Mockito.verify(shipmentInputPort,times(1)).save(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
+        Mockito.verify(externalDealersInputPort,times(1)).verifyExistsDealersById(anyLong());
     }
 
     @Test

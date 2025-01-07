@@ -10,6 +10,7 @@ public enum ErrorCatalog {
     SHIPMENT_BAD_PARAMETERS("SHIPMENT_MS_002", "Invalid parameters for creation shipment"),
     STATUS_SHIPMENT_STRATEGY_ERROR("SHIPMENT_MS_003", "Status type selected is invalid."),
     STATUS_SHIPMENT_RULES_ERROR("SHIPMENT_MS_004", "Status shipment rule not allowed"),
+    WEB_CLIENT_ERROR("SHIPMENT_MS_005", "Error with services."),
     INTERNAL_SERVER_ERROR("SHIPMENT_MS_000", "Internal server error.");
 
 

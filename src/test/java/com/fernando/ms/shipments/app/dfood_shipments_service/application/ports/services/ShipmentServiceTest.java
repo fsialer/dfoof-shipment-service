@@ -1,5 +1,6 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.services;
 
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalDealersOutputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ShipmentPersistencePort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.ShipmentService;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
@@ -23,8 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ShipmentServiceTest {
@@ -36,13 +36,16 @@ public class ShipmentServiceTest {
 
     private List<IStatusShipmentStrategy> statusShipmentStrategyList;
 
+    @Mock
+    private ExternalDealersOutputPort externalDealersOutputPort;
+
     @InjectMocks
     private ShipmentService shipmentService;
 
     @BeforeEach
     void setUp() {
         statusShipmentStrategyList = List.of(statusShipmentStrategy);
-        shipmentService = new ShipmentService(shipmentPersistencePort, statusShipmentStrategyList);
+        shipmentService = new ShipmentService(shipmentPersistencePort, statusShipmentStrategyList,externalDealersOutputPort);
     }
 
     @Test
@@ -128,5 +131,13 @@ public class ShipmentServiceTest {
         Mockito.verify(statusShipmentStrategy,times(1)).doOperation(any(Shipment.class));
         Mockito.verify(shipmentPersistencePort,times(1)).findById(anyLong());
         Mockito.verify(shipmentPersistencePort,times(1)).changeStatusShipment(shipment);
+    }
+
+    @Test
+    @DisplayName("When Dealer Identifier Is Correct Expect Result Void")
+    void When_DealerIdentifierIsCorrect_ExpectResultVoid(){
+        doNothing().when(externalDealersOutputPort).verifyExistsDealersById(anyLong());
+        shipmentService.verifyExistsDealersById(1L);
+        Mockito.verify(externalDealersOutputPort,times(1)).verifyExistsDealersById(anyLong());
     }
 }
