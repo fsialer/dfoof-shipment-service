@@ -97,10 +97,14 @@ public class ShipmentServiceTest {
         when(statusShipmentStrategy.isApplicable("PENDING")).thenReturn(true);
         when(statusShipmentStrategy.doOperation(any(Shipment.class))).thenReturn("PENDING");
         when(shipmentPersistencePort.save(shipment)).thenReturn(shipment);
+        doNothing().when(externalDealersOutputPort).verifyExistsDealersById(anyLong());
+        doNothing().when(externalOrdersOutputPort).verifyExistsStatusOrderByIds(anyList(),anyString());
         Shipment shipmentResponse=shipmentService.save(shipment);
         assertNotNull(shipmentResponse);
         Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
         Mockito.verify(statusShipmentStrategy,times(1)).doOperation(any(Shipment.class));
+        Mockito.verify(externalOrdersOutputPort,times(1)).verifyExistsStatusOrderByIds(anyList(),anyString());
+        Mockito.verify(externalDealersOutputPort,times(1)).verifyExistsDealersById(anyLong());
         Mockito.verify(shipmentPersistencePort,times(1)).save(shipment);
     }
 
@@ -111,6 +115,7 @@ public class ShipmentServiceTest {
         when(statusShipmentStrategy.isApplicable("PENDING")).thenReturn(false);
         //when(statusShipmentStrategy.doOperation(any(Shipment.class))).thenReturn("PENDING");
         //when(shipmentPersistencePort.save(shipment)).thenReturn(shipment);
+//        doNothing().when(externalOrdersOutputPort).verifyExistsStatusOrderByIds(anyList(),anyString());
         StatusShipmentStrategyException exception =assertThrows(StatusShipmentStrategyException.class,()->{
             shipmentService.save(shipment);
         });
@@ -119,6 +124,8 @@ public class ShipmentServiceTest {
         assertEquals("Status shipment not found: PENDING", exception.getMessage());
         Mockito.verify(statusShipmentStrategy,times(1)).isApplicable(anyString());
         Mockito.verify(statusShipmentStrategy,times(0)).doOperation(any(Shipment.class));
+        Mockito.verify(externalOrdersOutputPort,times(0)).verifyExistsStatusOrderByIds(anyList(),anyString());
+        Mockito.verify(externalDealersOutputPort,times(0)).verifyExistsDealersById(anyLong());
         Mockito.verify(shipmentPersistencePort,times(0)).save(shipment);
     }
 
@@ -144,5 +151,21 @@ public class ShipmentServiceTest {
         doNothing().when(externalDealersOutputPort).verifyExistsDealersById(anyLong());
         shipmentService.verifyExistsDealersById(1L);
         Mockito.verify(externalDealersOutputPort,times(1)).verifyExistsDealersById(anyLong());
+    }
+
+    @Test
+    @DisplayName("When Order Identifier Is Correct Expect Result Void")
+    void When_OrderIdentifierIsCorrect_ExpectResultVoid(){
+        doNothing().when(externalOrdersOutputPort).verifyExistsOrderByIds(anyList());
+        shipmentService.verifyExistsOrderByIds(List.of(1L));
+        Mockito.verify(externalOrdersOutputPort,times(1)).verifyExistsOrderByIds(anyList());
+    }
+
+    @Test
+    @DisplayName("When Order Identifier Status Is Correct Expect Result Void")
+    void When_OrderIdentifierStausIsCorrect_ExpectResultVoid(){
+        doNothing().when(externalOrdersOutputPort).verifyExistsStatusOrderByIds(anyList(),anyString());
+        shipmentService.verifyExistsStatusOrderByIds(List.of(1L),"REGISTERED");
+        Mockito.verify(externalOrdersOutputPort,times(1)).verifyExistsStatusOrderByIds(anyList(),anyString());
     }
 }

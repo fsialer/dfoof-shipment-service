@@ -4,4 +4,5 @@ import java.util.List;
 
 public interface ExternalOrdersInputPort {
     void verifyExistsOrderByIds(List<Long> ids);
+    void verifyExistsStatusOrderByIds(List<Long> ids,String status);
 }

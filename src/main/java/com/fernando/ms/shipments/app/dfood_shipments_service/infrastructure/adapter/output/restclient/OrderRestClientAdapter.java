@@ -17,4 +17,9 @@ public class OrderRestClientAdapter implements ExternalOrdersOutputPort {
     public void verifyExistsOrderByIds(List<Long> ids) {
         client.verifyExistsByIds(ids);
     }
+
+    @Override
+    public void verifyExistsStatusOrderByIds(List<Long> ids, String status) {
+        client.verifyExistsStatusByIds(ids,status);
+    }
 }

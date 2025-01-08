@@ -35,8 +35,6 @@ public class ShipmentRestAdapter {
 
     @PostMapping
     public ResponseEntity<ShipmentResponse> save(@Valid @RequestBody CreateShipmentRequest rq){
-        externalDealersInputPort.verifyExistsDealersById(rq.getDealerId());
-        externalOrdersInputPort.verifyExistsOrderByIds(rq.getOrders());
         ShipmentResponse response=shipmentRestMapper.toShipmentResponse(shipmentInputPort.save(shipmentRestMapper.toShipment(rq)));
         return ResponseEntity.created(URI.create("/shipments/".concat(response.getId().toString()))).body(response);
     }

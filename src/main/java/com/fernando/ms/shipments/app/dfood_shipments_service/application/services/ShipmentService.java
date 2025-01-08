@@ -9,11 +9,11 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.o
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
+import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Order;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,6 +42,8 @@ public class ShipmentService implements ShipmentInputPort, ExternalDealersInputP
                 .filter(strategy->strategy.isApplicable("PENDING"))
                 .findFirst()
                 .orElseThrow(()->new StatusShipmentStrategyException("Status shipment not found: PENDING"));
+        externalDealersOutputPort.verifyExistsDealersById(shipment.getDealer().getId());
+        externalOrdersOutputPort.verifyExistsStatusOrderByIds(shipment.getOrders().stream().map(Order::getId).toList(),"PAID");
         shipment.setStatusShipment(shipmentStrategy.doOperation(shipment));
         return shipmentPersistencePort.save(shipment);
     }
@@ -52,6 +54,7 @@ public class ShipmentService implements ShipmentInputPort, ExternalDealersInputP
                 .filter(strategy->strategy.isApplicable(status))
                 .findFirst()
                 .orElseThrow(()->new StatusShipmentStrategyException("Status shipment not found: "+status));
+
         return shipmentPersistencePort.findById(id)
                 .map(shipment -> {
                     shipment.setStatusShipment(shipmentStrategy.doOperation(shipment));
@@ -68,5 +71,10 @@ public class ShipmentService implements ShipmentInputPort, ExternalDealersInputP
     @Override
     public void verifyExistsOrderByIds(List<Long> ids) {
         externalOrdersOutputPort.verifyExistsOrderByIds(ids);
+    }
+
+    @Override
+    public void verifyExistsStatusOrderByIds(List<Long> ids, String status) {
+        externalOrdersOutputPort.verifyExistsStatusOrderByIds(ids,status);
     }
 }

@@ -109,8 +109,8 @@ public class ShipmentRestAdapterTest {
         when(shipmentRestMapper.toShipmentResponse(any(Shipment.class)))
                 .thenReturn(TestUtilShipment.buildShipmentResponseMock());
 
-        doNothing().when(externalDealersInputPort).verifyExistsDealersById(anyLong());
-        doNothing().when(externalOrdersInputPort).verifyExistsOrderByIds(anyList());
+        //doNothing().when(externalDealersInputPort).verifyExistsDealersById(anyLong());
+        //doNothing().when(externalOrdersInputPort).verifyExistsOrderByIds(anyList());
 
         mockMvc.perform(post("/shipments").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(TestUtilShipment.buildCreateShipmentRequestMok())))
@@ -121,8 +121,8 @@ public class ShipmentRestAdapterTest {
         Mockito.verify(shipmentInputPort,times(1)).save(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
-        Mockito.verify(externalDealersInputPort,times(1)).verifyExistsDealersById(anyLong());
-        Mockito.verify(externalOrdersInputPort,times(1)).verifyExistsOrderByIds(anyList());
+//        Mockito.verify(externalDealersInputPort,times(1)).verifyExistsDealersById(anyLong());
+//        Mockito.verify(externalOrdersInputPort,times(1)).verifyExistsOrderByIds(anyList());
     }
 
     @Test

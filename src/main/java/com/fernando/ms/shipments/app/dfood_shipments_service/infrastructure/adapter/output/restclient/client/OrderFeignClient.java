@@ -10,4 +10,9 @@ import java.util.List;
 public interface OrderFeignClient {
     @GetMapping("verify-exists-by-ids")
     void verifyExistsByIds(@RequestParam List<Long> ids);
+
+    @GetMapping("verify-exists-status-by-ids")
+    void verifyExistsStatusByIds(@RequestParam List<Long> ids,@RequestParam String status);
+
+
 }
