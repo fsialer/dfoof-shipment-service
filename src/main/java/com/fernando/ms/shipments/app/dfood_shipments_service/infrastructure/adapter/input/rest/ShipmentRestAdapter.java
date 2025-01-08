@@ -1,6 +1,7 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest;
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalOrdersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.mapper.ShipmentRestMapper;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.models.request.CreateShipmentRequest;
@@ -20,6 +21,7 @@ public class ShipmentRestAdapter {
     private final ShipmentInputPort shipmentInputPort;
     private final ShipmentRestMapper shipmentRestMapper;
     private final ExternalDealersInputPort externalDealersInputPort;
+    private final ExternalOrdersInputPort externalOrdersInputPort;
 
     @GetMapping
     public ResponseEntity<List<ShipmentResponse>> findAll(){
@@ -34,6 +36,7 @@ public class ShipmentRestAdapter {
     @PostMapping
     public ResponseEntity<ShipmentResponse> save(@Valid @RequestBody CreateShipmentRequest rq){
         externalDealersInputPort.verifyExistsDealersById(rq.getDealerId());
+        externalOrdersInputPort.verifyExistsOrderByIds(rq.getOrders());
         ShipmentResponse response=shipmentRestMapper.toShipmentResponse(shipmentInputPort.save(shipmentRestMapper.toShipment(rq)));
         return ResponseEntity.created(URI.create("/shipments/".concat(response.getId().toString()))).body(response);
     }

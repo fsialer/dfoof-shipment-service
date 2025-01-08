@@ -1,6 +1,7 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.services;
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalDealersOutputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalOrdersOutputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ShipmentPersistencePort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.ShipmentService;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
@@ -8,6 +9,7 @@ import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.S
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.StatusShipmentStrategyException;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.utils.TestUtilShipment;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,13 +41,16 @@ public class ShipmentServiceTest {
     @Mock
     private ExternalDealersOutputPort externalDealersOutputPort;
 
+    @Mock
+    private ExternalOrdersOutputPort externalOrdersOutputPort;
+
     @InjectMocks
     private ShipmentService shipmentService;
 
     @BeforeEach
     void setUp() {
         statusShipmentStrategyList = List.of(statusShipmentStrategy);
-        shipmentService = new ShipmentService(shipmentPersistencePort, statusShipmentStrategyList,externalDealersOutputPort);
+        shipmentService = new ShipmentService(shipmentPersistencePort, statusShipmentStrategyList,externalDealersOutputPort,externalOrdersOutputPort);
     }
 
     @Test

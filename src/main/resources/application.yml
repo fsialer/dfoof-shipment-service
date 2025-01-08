@@ -22,3 +22,5 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 dealers-service:
   url: ${DEALERS_URL:http://localhost:8084/dealers}
+orders-service:
+  url: ${ORDERS_URL:http://localhost:8083/orders}

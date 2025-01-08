@@ -1,8 +1,10 @@
 package com.fernando.ms.shipments.app.dfood_shipments_service.application.services;
 
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalOrdersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalDealersOutputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ExternalOrdersOutputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.output.ShipmentPersistencePort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.services.strategy.shipment.IStatusShipmentStrategy;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.exceptions.ShipmentNotFoundException;
@@ -16,11 +18,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ShipmentService implements ShipmentInputPort, ExternalDealersInputPort {
+public class ShipmentService implements ShipmentInputPort, ExternalDealersInputPort, ExternalOrdersInputPort {
 
     private final ShipmentPersistencePort shipmentPersistencePort;
     private final List<IStatusShipmentStrategy>  orderStrategyList;
     private final ExternalDealersOutputPort externalDealersOutputPort;
+    private final ExternalOrdersOutputPort externalOrdersOutputPort;
 
     @Override
     public List<Shipment> findAll() {
@@ -60,5 +63,10 @@ public class ShipmentService implements ShipmentInputPort, ExternalDealersInputP
     @Override
     public void verifyExistsDealersById(Long id) {
         externalDealersOutputPort.verifyExistsDealersById(id);
+    }
+
+    @Override
+    public void verifyExistsOrderByIds(List<Long> ids) {
+        externalOrdersOutputPort.verifyExistsOrderByIds(ids);
     }
 }

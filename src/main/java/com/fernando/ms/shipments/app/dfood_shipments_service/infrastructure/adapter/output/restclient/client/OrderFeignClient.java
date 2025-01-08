@@ -4,8 +4,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name="dealers-service",url="${dealers-service.url}")
-public interface DealerFeignClient {
-    @GetMapping("verify-exists-by-id")
-    void verifyExistsByIds(@RequestParam Long id);
+import java.util.List;
+
+@FeignClient(name="orders-service",url="${orders-service.url}")
+public interface OrderFeignClient {
+    @GetMapping("verify-exists-by-ids")
+    void verifyExistsByIds(@RequestParam List<Long> ids);
 }

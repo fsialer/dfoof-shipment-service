@@ -16,4 +16,6 @@ public class DealerRestClientAdapter implements ExternalDealersOutputPort {
     public void verifyExistsDealersById(Long id) {
         client.verifyExistsByIds(id);
     }
+
+
 }

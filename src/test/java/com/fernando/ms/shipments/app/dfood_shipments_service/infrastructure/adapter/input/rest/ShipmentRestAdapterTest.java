@@ -2,6 +2,7 @@ package com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.ada
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalDealersInputPort;
+import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ExternalOrdersInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.application.ports.input.ShipmentInputPort;
 import com.fernando.ms.shipments.app.dfood_shipments_service.domain.models.Shipment;
 import com.fernando.ms.shipments.app.dfood_shipments_service.infrastructure.adapter.input.rest.mapper.ShipmentRestMapper;
@@ -42,6 +43,9 @@ public class ShipmentRestAdapterTest {
 
     @MockBean
     private ExternalDealersInputPort externalDealersInputPort;
+
+    @MockBean
+    private ExternalOrdersInputPort externalOrdersInputPort;
 
 
     private ObjectMapper objectMapper;
@@ -106,6 +110,7 @@ public class ShipmentRestAdapterTest {
                 .thenReturn(TestUtilShipment.buildShipmentResponseMock());
 
         doNothing().when(externalDealersInputPort).verifyExistsDealersById(anyLong());
+        doNothing().when(externalOrdersInputPort).verifyExistsOrderByIds(anyList());
 
         mockMvc.perform(post("/shipments").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(TestUtilShipment.buildCreateShipmentRequestMok())))
@@ -117,6 +122,7 @@ public class ShipmentRestAdapterTest {
         Mockito.verify(shipmentRestMapper,times(1)).toShipmentResponse(any(Shipment.class));
         Mockito.verify(shipmentRestMapper,times(1)).toShipment(any(CreateShipmentRequest.class));
         Mockito.verify(externalDealersInputPort,times(1)).verifyExistsDealersById(anyLong());
+        Mockito.verify(externalOrdersInputPort,times(1)).verifyExistsOrderByIds(anyList());
     }
 
     @Test
